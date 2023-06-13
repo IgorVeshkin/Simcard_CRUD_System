@@ -1,7 +1,9 @@
 python manage.py createsuperuser
 
+Данные для входа в систему
+
 Имя пользователя: IgorAdmin
-Email: IgorAdmin@SimcardCRUD.com
+Email: IgorAdmin@SimcardCRUD.com (не настоящая почта)
 Password: Admin_CRUD_Simcard_System_01
 
 Имя пользователя: IgorVeshkin

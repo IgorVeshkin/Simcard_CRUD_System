@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+
+{% load static %}
+
+{% load CRUD_System_tags %}
+<html>
+<head>
+	<title>Система управления Sim-карт</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" type="text/css" href="{% static 'css/Simcard_CRUD.css' %}">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css" rel="stylesheet">
+
+
+</head>
+<body>
+
+			{% for simcard in Simcards %}
+				<input type="hidden" id="simcard_update_{{ simcard.pk }}_pk" value="{{ simcard.pk }}">
+				<input type="hidden" id="simcard_update_{{ simcard.pk }}_IMEI" value="{{ simcard.IMEI }}">
+				<input type="hidden" id="simcard_update_{{ simcard.pk }}_PhoneNumber" value="{{ simcard.PhoneNumber }}">
+				<input type="hidden" id="simcard_update_{{ simcard.pk }}_ClientName" value="{{ simcard.ClientName }}">
+				<input type="hidden" id="simcard_update_{{ simcard.pk }}_RegistrationDate" value="{{ simcard.RegistrationDate | date:'Y-m-d' }}">
+				<input type="hidden" id="simcard_update_{{ simcard.pk }}_TariffPlan" value="{{ simcard.TariffPlan }}">
+				<input type="hidden" id="simcard_update_{{ simcard.pk }}_TariffPlan_pk" value="{{ simcard.TariffPlan.pk }}">
+			{% endfor %}
+
+	<div class="container main-cont">
+
+		<h1 class="Simcard-header-title">SIM-карты</h1>
+		<div class="CRUD-System-User-Info"><span>{{ request.user.username }}</span> <a href="{% url 'logout-request' %}" type="button" class="btn btn-primary exit-profile-btn"><span class="bi-box-arrow-left"></span>Exit</a></div>
+
+
+		<div class="mt-3">
+			<button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#exampleModal" data-bs-whatever="@mdo"><span class="bi-plus-square"></span>&nbsp;Добавить новую SIM-карту</button>
+		</div>
+
+		<table id="simcards-table" class="table-text-align table table-striped mt-2 fw-normal">
+		  <thead class="table-header text-white">
+		    <tr>
+		      <th scope="col">ID</th>
+		      <th scope="col">IMEI</th>
+		      <th scope="col">Номер телефона</th>
+		      <th scope="col">ФИО клиента</th>
+		      <th scope="col">Дата регистрации</th>
+		      <th scope="col">Тарифный план</th>
+		      <th scope="col"></th>
+		    </tr>
+		  </thead>
+		  <tbody id="simcard-records">
+		  	{% for simcard in Simcards %}
+				<tr>
+		      <th scope="row">{{ simcard.pk }}</th>
+		      <td>{{ simcard.IMEI }}</td>
+		      <td>{{ simcard.PhoneNumber | PhoneNumberForm }}</td>
+		      <td>{{ simcard.ClientName }}</td>
+		      <td>{{ simcard.RegistrationDate }}</td>
+		      <td>{{ simcard.TariffPlan }}</td>
+		      <td><button type="button" class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#updateRecordModal" onclick="update_this_record(this.value);" value="{{ simcard.pk }}"><span class="bi-pencil-fill"></span>&nbsp;</button>
+		      	  <button type="button" class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#staticBackdrop" onclick="delete_this_record(this);" value="{{ simcard.pk }}"><span class="bi-eraser-fill"></span>&nbsp;</button>
+		      </td>
+		    </tr>
+
+			{% endfor %}
+
+		  </tbody>
+		</table>
+
+
+		<!-- Delete Record Ask Modal -->
+
+		<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+		  <div class="modal-dialog">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <h5 class="modal-title" id="staticBackdropLabel">Удаление данных SIM-карты</h5>
+		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		      </div>
+		      <div id="delete-record-modal-body" class="modal-body">
+		        Вы действительно хотите удалить данную запись?
+		      </div>
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+			    <form method="GET">
+					<input type="hidden" id="deleted-record-id-hidden" name="deleted-record-id" value="">
+		        	<input type="submit" class="btn btn-primary" value="Удалить">
+
+				</form>
+		      </div>
+		    </div>
+		  </div>
+		</div>
+
+
+		<div class="modal fade" id="exampleModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		   <div class="modal-dialog"> <!-- modal-dialog-scrollable -->
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <h5 class="modal-title" id="exampleModalLabel">Создать новую запись в системе</h5>
+		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="clear_fields();"></button>
+		      </div>
+		      <div class="modal-body modal-scrollable-part">
+		        <form>
+		          <div class="mb-3">
+		            <label for="recipient-name" class="col-form-label">IMEI:</label>
+		            <input type="text" class="form-control" name="IMEI-name" id="IMEI-name">
+		          </div>
+		          <div class="mb-3">
+		            <label for="message-text" class="col-form-label">Номер телефона:</label>
+		            <input type="phone" class="form-control" name="Phone-name" id="Phone-name">
+		          </div>
+		           <div class="mb-3">
+		            <label for="message-text" class="col-form-label">ФИО:</label>
+		            <input type="text" class="form-control" name="CustomerName-name" id="CustomerName-name">
+		          </div>
+		           <div class="mb-3">
+		            <label for="message-text" class="col-form-label">Дата регистрации:</label>
+		            <input type="date" class="form-control" name="RegDate-name" id="RegDate-name">
+		          </div>
+		           <div class="mb-3">
+		            <label for="message-text" class="col-form-label">Тарифный план:</label>
+		            <div class="ServiceType-dropdown">
+			            <input type="text" name="ServiceType-name" class="form-control" id="ServiceType-name">
+			            <button type="button" class="btn btn-lg btn-light dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+	    				<span class="visually-hidden">Переключатель выпадающего списка</span>
+	 					</button>
+	 					<ul class="dropdown-menu">
+							{% for tariff in TariffPlan %}
+
+								<input type="hidden" id="tariff_{{ tariff.pk }}_pk" value="{{ tariff.pk }}">
+								<input type="hidden" id="tariff_{{ tariff.pk }}_title" value="{{ tariff.Title }}">
+								<input type="hidden" id="tariff_{{ tariff.pk }}_minutes" value="{{ tariff.Minutes }}">
+								<input type="hidden" id="tariff_{{ tariff.pk }}_sms" value="{{ tariff.SMS }}">
+								<input type="hidden" id="tariff_{{ tariff.pk }}_gigabytes" value="{{ tariff.Gigabytes }}">
+								<input type="hidden" id="tariff_{{ tariff.pk }}_price" value="{{ tariff.Price }}">
+
+								<li><a class="dropdown-item" href="#" onclick="ServiceType_selector({{ tariff.pk }});">{{ tariff }}</a></li>
+
+	  						{% endfor %}
+						</ul>
+	  					
+  					</div>
+		          </div>
+		        </form>
+		      </div>
+
+		      <div class="container-md ml-3 border ServiceType-info">
+		      				<div>Тарифный План</div>
+		      				<table>
+		      					<tr>
+		      						<th></th>
+		      						<th></th>
+		      					</tr>
+		      					<tr>
+		      						<td class="ServiceInfo-table-label-column">ID:</td>
+		      						<td id="service-info-id"></td>
+
+		      					</tr>
+		      					<tr>
+		      						<td class="ServiceInfo-table-label-column">Название:</td>
+		      						<td id="service-info-title"></td>
+		      					</tr>
+		      					<tr>
+		      						<td class="ServiceInfo-table-label-column">Количество минут:</td>
+		      						<td id="service-info-minutes"></td>
+		      					</tr>
+		      					<tr>
+		      						<td class="ServiceInfo-table-label-column">Количество смс:</td>
+		      						<td id="service-info-sms"></td>
+		      					</tr>
+								<tr>
+		      						<td class="ServiceInfo-table-label-column">Количество гигабайт:</td>
+		      						<td id="service-info-gigabytes"></td>
+		      					</tr>
+		      					<tr>
+		      						<td class="ServiceInfo-table-label-column">Стоимость:</td>
+		      						<td id="service-info-price"></td>
+		      					</tr>
+
+		      				</table>
+
+	  					</div>
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="clear_fields();">Закрыть</button>
+		        <form method="GET">
+
+					<input type="hidden" name="add-record-IMEI" id="add-record-IMEI" value="">
+					<input type="hidden" name="add-record-Phone" id="add-record-Phone" value="">
+					<input type="hidden" name="add-record-CustomerName" id="add-record-CustomerName" value="">
+					<input type="hidden" name="add-record-RegDate" id="add-record-RegDate" value="">
+					<input type="hidden" name="add-record-ServiceType" id="add-record-ServiceType" value="">
+
+					<input type="submit" class="btn btn-primary" data-bs-dismiss="modal" value="Создать" onclick="add_record();">
+		      	</form>
+			  </div>
+		    </div>
+		  </div>
+		</div>
+
+		<h1 class="ServiceType-header-title">Тарифные планы</h1>
+
+		<table id="service-table" class="table-text-align table table-striped mt-2 fw-normal">
+		  <thead class="table-header text-white"> 
+		  	<!-- bg-success -->
+		    <tr>
+		      <th scope="col">ID</th>
+		      <th scope="col">Название</th>
+		      <th scope="col">Количество минут</th>
+		      <th scope="col">Количество смс</th>
+		      <th scope="col">Количество гигабайт</th>
+		      <th scope="col">Стоимость (рубли)</th>
+		    </tr>
+		  </thead>
+		  <tbody id="simcard-records">
+
+		  	{% for tariff in TariffPlan %}
+				<tr>
+				  <th scope="row">{{ tariff.pk }}</th>
+				  <td>{{ tariff.Title }}</td>
+				  <td>{{ tariff.Minutes }}</td>
+				  <td>{{ tariff.SMS }}</td>
+				  <td>{{ tariff.Gigabytes }}</td>
+				  <td>{{ tariff.Price }}</td>
+				</tr>
+
+			{% endfor %}
+		   
+		  </tbody>
+		</table>
+
+
+<!-- Update Modal Display -->
+		<div class="modal fade" id="updateRecordModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		   <div class="modal-dialog"> <!-- modal-dialog-scrollable -->
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <h5 class="modal-title" id="updateRecordModalLabel">Редактирование текущей записи в системе</h5>
+		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="clear_update_fields();"></button>
+		      </div>
+		      <div class="modal-body modal-scrollable-part">
+		        <form>
+		          <div class="mb-3">
+		            <label for="recipient-name" class="col-form-label">IMEI:</label>
+		            <input type="text" class="form-control" name="IMEI-update-name" id="IMEI-update-name">
+		          </div>
+		          <div class="mb-3">
+		            <label for="message-text" class="col-form-label">Номер телефона:</label>
+		            <input type="phone" class="form-control" name="Phone-update-name" id="Phone-update-name">
+		          </div>
+		           <div class="mb-3">
+		            <label for="message-text" class="col-form-label">ФИО:</label>
+		            <input type="text" class="form-control" name="CustomerName-update-name" id="CustomerName-update-name">
+		          </div>
+		           <div class="mb-3">
+		            <label for="message-text" class="col-form-label">Дата регистрации:</label>
+		            <input type="date" class="form-control" name="RegDate-update-name" id="RegDate-update-name">
+		          </div>
+		           <div class="mb-3">
+		            <label for="message-text" class="col-form-label">Тарифный план:</label>
+		            <div class="ServiceType-dropdown">
+			            <input type="text" name="ServiceType-update-name" class="form-control" id="ServiceType-update-name">
+			            <button type="button" class="btn btn-lg btn-light dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+	    				<span class="visually-hidden">Переключатель выпадающего списка</span>
+	 					</button>
+	 					<ul class="dropdown-menu">
+							{% for tariff in TariffPlan %}
+
+								<input type="hidden" id="tariff_update_{{ tariff.pk }}_pk" value="{{ tariff.pk }}">
+								<input type="hidden" id="tariff_update_{{ tariff.pk }}_title" value="{{ tariff.Title }}">
+								<input type="hidden" id="tariff_update_{{ tariff.pk }}_minutes" value="{{ tariff.Minutes }}">
+								<input type="hidden" id="tariff_update_{{ tariff.pk }}_sms" value="{{ tariff.SMS }}">
+								<input type="hidden" id="tariff_update_{{ tariff.pk }}_gigabytes" value="{{ tariff.Gigabytes }}">
+								<input type="hidden" id="tariff_update_{{ tariff.pk }}_price" value="{{ tariff.Price }}">
+
+								<li><a class="dropdown-item" href="#" onclick="ServiceType_update_selector({{ tariff.pk }});">{{ tariff }}</a></li>
+
+	  						{% endfor %}
+						</ul>
+
+  					</div>
+		          </div>
+		        </form>
+		      </div>
+
+		      <div class="container-md ml-3 border ServiceType-info">
+		      				<div>Тарифный План</div>
+		      				<table>
+		      					<tr>
+		      						<th></th>
+		      						<th></th>
+		      					</tr>
+		      					<tr>
+		      						<td class="ServiceInfo-table-label-column">ID:</td>
+		      						<td id="service-info-update-id"></td>
+
+		      					</tr>
+		      					<tr>
+		      						<td class="ServiceInfo-table-label-column">Название:</td>
+		      						<td id="service-info-update-title"></td>
+		      					</tr>
+		      					<tr>
+		      						<td class="ServiceInfo-table-label-column">Количество минут:</td>
+		      						<td id="service-info-update-minutes"></td>
+		      					</tr>
+		      					<tr>
+		      						<td class="ServiceInfo-table-label-column">Количество смс:</td>
+		      						<td id="service-info-update-sms"></td>
+		      					</tr>
+								<tr>
+		      						<td class="ServiceInfo-table-label-column">Количество гигабайт:</td>
+		      						<td id="service-info-update-gigabytes"></td>
+		      					</tr>
+		      					<tr>
+		      						<td class="ServiceInfo-table-label-column">Стоимость:</td>
+		      						<td id="service-info-update-price"></td>
+		      					</tr>
+
+		      				</table>
+
+	  					</div>
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="clear_update_fields();">Закрыть</button>
+		        <form method="GET">
+					<input type="hidden" name="update-record-simcard-pk" id="update-record-simcard-pk" value="">
+					<input type="hidden" name="update-record-IMEI" id="update-record-IMEI" value="">
+					<input type="hidden" name="update-record-Phone" id="update-record-Phone" value="">
+					<input type="hidden" name="update-record-CustomerName" id="update-record-CustomerName" value="">
+					<input type="hidden" name="update-record-RegDate" id="update-record-RegDate" value="">
+					<input type="hidden" name="update-record-ServiceType" id="update-record-ServiceType" value="">
+					<input type="hidden" name="update-record-ServiceType-pk" id="update-record-ServiceType-pk" value="">
+
+					<input type="submit" class="btn btn-primary" data-bs-dismiss="modal" value="Применить" onclick="upload_into_update_record();">
+		      	</form>
+			  </div>
+		    </div>
+		  </div>
+		</div>
+
+
+
+	</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous"></script>
+<script type="text/javascript" src="{% static '/js/Simcard_CRUD.js' %}"></script>
+
+<script type="text/javascript">
+var IMEI_input = document.getElementById('IMEI-name');
+var Phone_input = document.getElementById('Phone-name');
+var CustomerName_input = document.getElementById('CustomerName-name');
+var RegDate_input = document.getElementById('RegDate-name');
+var ServiceType_input = document.getElementById('ServiceType-name');
+
+var ServiceType_info = document.getElementById('ServiceType-info'); 
+var ServiceType_info_id = document.getElementById("service-info-id");
+var ServiceType_info_title = document.getElementById("service-info-title");
+var ServiceType_info_minutes = document.getElementById("service-info-minutes");
+var ServiceType_info_sms = document.getElementById("service-info-sms");
+var ServiceType_info_gigabytes = document.getElementById("service-info-gigabytes");
+var ServiceType_info_price = document.getElementById("service-info-price");
+
+var simcard_records_table = document.getElementById("simcard-records");
+
+ServiceType_input.disabled = true;
+
+var delete_warning_text = document.getElementById("delete-record-modal-body");
+var hidden_data_to_delete = document.getElementById("deleted-record-id-hidden");
+
+function ServiceType_selector(inputtext) {
+	var tariff_pk = document.getElementById(`tariff_${inputtext}_pk`).value;
+	var tariff_title = document.getElementById(`tariff_${inputtext}_title`).value;
+	var tariff_minutes = document.getElementById(`tariff_${inputtext}_minutes`).value;
+	var tariff_sms = document.getElementById(`tariff_${inputtext}_sms`).value;
+	var tariff_gigabytes = document.getElementById(`tariff_${inputtext}_gigabytes`).value;
+	var tariff_price = document.getElementById(`tariff_${inputtext}_price`).value;
+
+	ServiceType_input.value = tariff_title;
+	ServiceType_info_id.innerHTML = tariff_pk;
+	ServiceType_info_title.innerHTML = tariff_title;
+	ServiceType_info_minutes.innerHTML = tariff_minutes;
+	ServiceType_info_sms.innerHTML = tariff_sms;
+	ServiceType_info_gigabytes.innerHTML = tariff_gigabytes;
+	ServiceType_info_price.innerHTML = tariff_price;
+
+}
+
+function clear_fields() {
+	IMEI_input.value = "";
+	Phone_input.value = "";
+	CustomerName_input.value = "";
+	RegDate_input.value = "";
+
+	ServiceType_input.value = "";
+	ServiceType_info_id.innerHTML = "";
+	ServiceType_info_title.innerHTML = "";
+	ServiceType_info_minutes.innerHTML = "";
+	ServiceType_info_sms.innerHTML = "";
+	ServiceType_info_gigabytes.innerHTML = "";
+	ServiceType_info_price.innerHTML = "";
+
+}
+
+var add_record_IMEI_field = document.getElementById("IMEI-name");
+var add_record_IMEI_hidden_field = document.getElementById("add-record-IMEI");
+
+var add_record_Phone_field = document.getElementById("Phone-name");
+var add_record_Phone_hidden_field = document.getElementById("add-record-Phone");
+
+var add_record_CustomerName_field = document.getElementById("CustomerName-name");
+var add_record_CustomerName_hidden_field = document.getElementById("add-record-CustomerName");
+
+var add_record_RegistrationDate_field = document.getElementById("RegDate-name");
+var add_record_RegistrationDate_hidden_field = document.getElementById("add-record-RegDate");
+
+var add_record_ServiceType_field = document.getElementById("ServiceType-name");
+var add_record_ServiceType_hidden_field = document.getElementById("add-record-ServiceType");
+
+function add_record() {
+
+	add_record_IMEI_hidden_field.value = add_record_IMEI_field.value;
+	add_record_Phone_hidden_field.value = add_record_Phone_field.value;
+	add_record_CustomerName_hidden_field.value = add_record_CustomerName_field.value;
+	add_record_RegistrationDate_hidden_field.value = add_record_RegistrationDate_field.value;
+	add_record_ServiceType_hidden_field.value = add_record_ServiceType_field.value;
+
+}
+
+function delete_this_record(record) {
+	hidden_data_to_delete.value = record.value;
+	delete_warning_text.innerHTML = `Вы действительно хотите удалить ${record.value}-ую запись?`
+}
+
+var ServiceType_info_update_id = document.getElementById("service-info-update-id");
+var ServiceType_info_update_title = document.getElementById("service-info-update-title");
+var ServiceType_info_update_minutes = document.getElementById("service-info-update-minutes");
+var ServiceType_info_update_sms = document.getElementById("service-info-update-sms");
+var ServiceType_info_update_gigabytes = document.getElementById("service-info-update-gigabytes");
+var ServiceType_info_update_price = document.getElementById("service-info-update-price");
+
+function ServiceType_update_selector(inputtext) {
+	var tariff_update_pk = document.getElementById(`tariff_update_${inputtext}_pk`).value;
+	var tariff_update_title = document.getElementById(`tariff_update_${inputtext}_title`).value;
+	var tariff_update_minutes = document.getElementById(`tariff_update_${inputtext}_minutes`).value;
+	var tariff_update_sms = document.getElementById(`tariff_update_${inputtext}_sms`).value;
+	var tariff_update_gigabytes = document.getElementById(`tariff_update_${inputtext}_gigabytes`).value;
+	var tariff_update_price = document.getElementById(`tariff_update_${inputtext}_price`).value;
+
+	ServiceType_update_input.value = tariff_update_title;
+	ServiceType_info_update_id.innerHTML = tariff_update_pk;
+	ServiceType_info_update_title.innerHTML = tariff_update_title;
+	ServiceType_info_update_minutes.innerHTML = tariff_update_minutes;
+	ServiceType_info_update_sms.innerHTML = tariff_update_sms;
+	ServiceType_info_update_gigabytes.innerHTML = tariff_update_gigabytes;
+	ServiceType_info_update_price.innerHTML = tariff_update_price;
+}
+
+function clear_update_fields() {
+	IMEI_update_input.value = "";
+	Phone_update_input.value = "";
+	CustomerName_update_input.value = "";
+	RegDate_update_input.value = "";
+	ServiceType_update_input.value = "";
+
+	ServiceType_info_update_id.innerHTML = "";
+	ServiceType_info_update_title.innerHTML = "";
+	ServiceType_info_update_minutes.innerHTML = "";
+	ServiceType_info_update_sms.innerHTML = "";
+	ServiceType_info_update_gigabytes.innerHTML = "";
+	ServiceType_info_update_price.innerHTML = "";
+
+}
+
+
+
+var update_upload_record_simcard_pk_hidden_field = document.getElementById('update-record-simcard-pk');
+
+var IMEI_update_input = document.getElementById('IMEI-update-name');
+var update_upload_record_IMEI_hidden_field = document.getElementById("update-record-IMEI");
+
+var Phone_update_input = document.getElementById('Phone-update-name');
+var update_upload_record_Phone_hidden_field = document.getElementById("update-record-Phone");
+
+var CustomerName_update_input = document.getElementById('CustomerName-update-name');
+var update_upload_record_CustomerName_hidden_field = document.getElementById("update-record-CustomerName");
+
+var RegDate_update_input = document.getElementById("RegDate-update-name");
+var update_upload_record_RegDate_hidden_field = document.getElementById("update-record-RegDate");
+
+var ServiceType_update_input = document.getElementById('ServiceType-update-name');
+var update_upload_record_ServiceType_hidden_field = document.getElementById("update-record-ServiceType");
+
+ServiceType_update_input.disabled = true;
+
+<!--var ServiceType_pk_update_input = document.getElementById('ServiceType-pk-update-name');-->
+var update_upload_record_ServiceType_pk_hidden_field = document.getElementById("update-record-ServiceType-pk");
+
+/*
+
+function formatDate(date) {
+    var d = new Date(date),
+        month = '' + (d.getMonth() + 1),
+        day = '' + d.getDate(),
+        year = d.getFullYear();
+
+    if (month.length < 2)
+        month = '0' + month;
+    if (day.length < 2)
+        day = '0' + day;
+
+    return [day, month, year].join('.');
+}
+
+*/
+
+
+function upload_into_update_record() {
+
+	update_upload_record_IMEI_hidden_field.value = IMEI_update_input.value;
+	update_upload_record_Phone_hidden_field.value = Phone_update_input.value;
+	update_upload_record_CustomerName_hidden_field.value = CustomerName_update_input.value;
+	update_upload_record_RegDate_hidden_field.value = RegDate_update_input.value;
+	update_upload_record_ServiceType_hidden_field.value = ServiceType_update_input.value;
+
+	/* alert(update_upload_record_ServiceType_pk_hidden_field);
+
+	alert(ServiceType_info_update_id.innerHTML); */
+	update_upload_record_ServiceType_pk_hidden_field.value = ServiceType_info_update_id.innerHTML;
+
+	alert(formatDate(RegDate_update_input.value), RegDate_update_input.value);
+	alert(update_upload_record_RegistrationDate_hidden_field);
+	alert(update_upload_record_ServiceType_hidden_field, update_upload_record_ServiceType_hidden_field.value);
+}
+
+
+function update_this_record(record) {
+	var UpdateModalLabel = document.getElementById('updateRecordModalLabel');
+	var simcard_update_pk_hidden = document.getElementById(`simcard_update_${record}_pk`).value;
+
+	var simcard_update_IMEI_hidden = document.getElementById(`simcard_update_${record}_IMEI`).value;
+	var simcard_update_PhoneNumber_hidden = document.getElementById(`simcard_update_${record}_PhoneNumber`).value;
+	var simcard_update_ClientName_hidden = document.getElementById(`simcard_update_${record}_ClientName`).value;
+	var simcard_update_RegistrationDate_hidden = document.getElementById(`simcard_update_${record}_RegistrationDate`).value;
+	var simcard_update_TariffPlan_hidden = document.getElementById(`simcard_update_${record}_TariffPlan`).value;
+	var simcard_update_TariffPlan_pk_hidden = document.getElementById(`simcard_update_${record}_TariffPlan_pk`).value;
+
+	UpdateModalLabel.innerHTML = `Редактирование ${simcard_update_pk_hidden} записи в системе`;
+	update_upload_record_simcard_pk_hidden_field.value = simcard_update_pk_hidden;
+
+	/* alert(simcard_update_RegistrationDate_hidden);
+	var date = new Date(Date.parse(simcard_update_RegistrationDate_hidden));
+	alert(date);
+	alert(simcard_update_TariffPlan_pk_hidden); */
+
+	IMEI_update_input.value = simcard_update_IMEI_hidden;
+	Phone_update_input.value = simcard_update_PhoneNumber_hidden;
+	CustomerName_update_input.value = simcard_update_ClientName_hidden;
+	RegDate_update_input.value = simcard_update_RegistrationDate_hidden;
+	ServiceType_update_input.value = simcard_update_TariffPlan_hidden;
+
+	ServiceType_update_selector(simcard_update_TariffPlan_pk_hidden);
+
+
+}
+
+</script>
+
+<!-- <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"> -->
+<!--   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script> -->
+
+
+</body>
+</html>

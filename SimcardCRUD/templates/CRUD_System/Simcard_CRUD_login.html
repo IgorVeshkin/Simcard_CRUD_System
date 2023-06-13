@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+
+{% load static %}
+
+<html>
+<head>
+	<title>Вход в систему управления Sim-карт</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" type="text/css" href="{% static 'css/Simcard_CRUD_login.css' %}">
+</head>
+<body>
+	<div class="container">
+		<div class="login-form">
+			<div class="form-header">
+				<text>Вход в систему управления Sim-карт</text>
+			</div>
+
+			<form method="POST">
+				{% csrf_token %}
+
+				{% if messages %}
+				{% for message in messages %}
+					{% if 'error' in message.tags %}
+						<div class="error-msg-box">
+							<div class="{{ message.tags }}">{{ message }} <button onclick="remove_login_error_message();" class="msg-exit-btn">X</button></div>
+						</div>
+					{% endif %}
+				{% endfor %}
+        	{% endif %}
+
+
+				{% for field in CRUDSystemLoginForm %}
+
+					{{ field.errors }}
+					{{ field }}
+
+					{% if field.help_text %}
+					<p class="help">{{ field.help_text|safe }}</p>
+					{% endif %}
+
+				{% endfor %}
+
+				<input type="submit" name="" value="Войти в систему">
+			</form>
+		</div>
+	</div>
+
+<script type="text/javascript">
+
+function remove_login_error_message() {
+
+	var msg_box_error = document.querySelector('.error-msg-box');
+
+	msg_box_error.parentNode.removeChild(msg_box_error);
+
+}
+</script>
+</body>
+</html>

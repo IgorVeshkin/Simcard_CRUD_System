@@ -1,0 +1,15 @@
+python manage.py createsuperuser
+
+Имя пользователя: IgorAdmin
+Email: IgorAdmin@SimcardCRUD.com
+Password: Admin_CRUD_Simcard_System_01
+
+Имя пользователя: IgorVeshkin
+Password: Igor_1234567890
+
+Имя пользователя: User1
+Password: User1_Password
+
+Имя пользователя: User2
+Password: User2_Unique_Password
+

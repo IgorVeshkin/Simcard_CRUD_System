@@ -1,0 +1,101 @@
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	font-family: system-ui;
+}
+
+.table-header {
+	background-color: #298355;
+	border-color: white;
+}
+
+.table-text-align {
+	text-align: center;
+
+}
+
+.ServiceType-dropdown {
+	position: relative;
+}
+
+.ServiceType-dropdown > input {
+	width: calc(93%);
+}
+
+.ServiceType-dropdown > button {
+	position: absolute;
+	top: 0;
+	right: 0;
+	height: 37px;
+	outline: 0;
+	border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.ServiceType-info {
+	display: flex;
+	flex-direction: column;
+
+}
+
+.ServiceType-info > div {
+	display: inline-flex;
+}
+
+.ServiceType-info > div:nth-child(1) {
+	font-size: 20px;
+}
+
+.service-info-padding {
+	padding-left: 10px;
+}
+
+.ServiceInfo-table-label-column {
+    width: 200px;
+}
+
+.Simcard-header-title {
+	margin: 0.25rem 0 0 0;
+}
+
+.ServiceType-header-title {
+	margin: 1rem 0 1rem 0;
+}
+
+#simcard-records > tr:nth-child(even):hover {
+	background-color: none;
+	background-color: #c5dcf1;
+}
+
+.modal-scrollable-part {
+	max-height: 375px;
+	overflow-y: scroll;
+}
+
+#simcard-records > tr:nth-child(odd):hover {
+	background-color: none;
+	background-color: #c5dcf1;
+}
+
+.change-items-page > button {
+	border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.main-cont {
+    position: relative;
+}
+
+.CRUD-System-User-Info {
+    position: absolute;
+    right: 1em;
+    top: 0.25em;
+
+}
+
+.CRUD-System-User-Info > span {
+    padding: 0 0.5em 0 0;
+}
+
+.exit-profile-btn > span {
+    margin: 0 0.5em 0 0;
+}

@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 
+from celery.schedules import crontab
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -36,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'CRUD_System.apps.CrudSystemConfig',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -104,7 +107,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'ru-ru'  # en-us
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
@@ -124,3 +127,42 @@ STATICFILES_DIRS = (
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# Celery settings
+
+# No password
+# If celery is stored in Docker container, then use Docker service name aka 'redis' instead of localhost
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+
+# With password
+# CELERY_BROKER_URL = 'redis://:{password}@localhost:6379/0'
+# CELERY_RESULT_BACKEND = 'redis://:{password}@localhost:6379/0'
+
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_ENABLE_UTC = False  # Важно, чтобы Celery ориентировался на локальный часовой пояс
+
+# Дополнительный форсированный маппинг для новых версий Celery
+CELERY_REDIS_BACKEND_SETTINGS = {
+    'protocol': 2
+}
+
+# Устанавливаем расписание для задач Celery beat из django-celery-beat
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+
+CELERY_BEAT_SCHEDULE = {
+    # Каждые 5 минут
+    'run-every-5-minutes': {
+        'task': 'every_5_minutes_task',  # Путь к задаче
+        'schedule': crontab(minute='*/5'),            # Выражение crontab
+    },
+    
+    # Каждый день в конкретное время
+    'run-daily-at-specific-time': {
+        'task': 'task_to_be_executed_everyday_at_17_45',
+        'schedule': crontab(hour=17, minute=45),       # Запуск ровно в 17:45
+    },
+}

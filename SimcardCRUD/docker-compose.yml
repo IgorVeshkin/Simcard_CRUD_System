@@ -1,0 +1,52 @@
+services:
+  redis:
+    image: redis:6.2-alpine
+    container_name: redis-docker
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+
+
+  webapp:
+    build: .
+    image: celery_django_app_container_image
+    container_name: celery_django_app_container
+    restart: unless-stopped
+    command: "python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+
+    
+  celery_worker:
+    image: celery_django_app_container_image
+    container_name: celery_django_worker_container
+    restart: unless-stopped
+    command: "celery -A SimcardCRUD worker --loglevel=INFO"
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+
+  
+  celery_beat:
+    image: celery_django_app_container_image
+    container_name: celery_django_beat_container
+    restart: unless-stopped
+    command: "celery -A SimcardCRUD beat --loglevel=INFO -S django"
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+      - celery_worker
+    
+
+volumes:
+  redis_data:
+    driver: local

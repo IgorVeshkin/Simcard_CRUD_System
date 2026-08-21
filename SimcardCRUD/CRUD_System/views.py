@@ -8,6 +8,8 @@ from .models import TariffPlan, Simcard
 
 from .forms import *
 
+from CRUD_System.tasks import send_client_creation_message
+
 # Create your views here.
 
 
@@ -23,14 +25,21 @@ def main(request):
         elif "add-record-IMEI" in request.GET:
             current_tariff = TariffPlan.objects.filter(Title=request.GET.get("add-record-ServiceType"))
 
+            client_name = request.GET.get("add-record-CustomerName")
+            client_phone = request.GET.get('add-record-Phone')
+
             SimcardRecord = Simcard(IMEI=request.GET.get('add-record-IMEI'),
-                                    PhoneNumber=request.GET.get('add-record-Phone'),
-                                    ClientName=request.GET.get("add-record-CustomerName"),
+                                    PhoneNumber=client_phone,
+                                    ClientName=client_name,
                                     RegistrationDate=request.GET.get("add-record-RegDate"),
                                     TariffPlan=current_tariff[0])
 
             SimcardRecord.save()
-            print(request.GET)
+
+            # Отправка сообщения о создании нового пользователя
+            task_result = send_client_creation_message.delay(client_name, client_phone)
+
+            print(f"Задача успешно отправлена с id: {task_result.id}")
 
             return redirect('/')
 
@@ -48,8 +57,6 @@ def main(request):
 
             current_simcard_record.save()
 
-            print(request.GET)
-
             return redirect('/')
 
     context = {"Simcards": Simcard.objects.all(),
@@ -62,9 +69,7 @@ def login_request(request):
 
     if request.method == "POST":
         form = CRUDSystemLoginForm(request.POST)
-        print(request.POST)
         if form.is_valid():
-            print('works', request.POST)
             username = form.cleaned_data.get('Username')
             password = form.cleaned_data.get('Password')
             user = authenticate(username=username, password=password)

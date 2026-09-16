@@ -29,3 +29,14 @@ Rename `.env.example` file into `.env`
 Enter `yandex email address` that is gonna be used
 
 Create `yandex app password` and enter it 
+
+# Pytest startup
+
+__All tests are running in docker__
+
+All tests: `docker compose exec webapp pytest` or `docker compose exec webapp pytest -v`
+
+Specific file: `docker compose exec webapp pytest CRUD_System/tests/views_tests.py`
+
+Specific test in file: `docker compose exec webapp pytest CRUD_System/tests/views_tests.py::test_authenticated_main_page`
+

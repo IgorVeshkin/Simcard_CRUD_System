@@ -166,3 +166,20 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': crontab(hour=17, minute=45),       # Запуск ровно в 17:45
     },
 }
+
+
+# Email настройки
+# Используется .env-файл
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+EMAIL_HOST = "smtp.yandex.ru"
+EMAIL_PORT = 465
+
+EMAIL_USE_SSL = True
+EMAIL_USE_TLS = False
+
+EMAIL_HOST_USER = os.getenv("YANDEX_EMAIL")
+EMAIL_HOST_PASSWORD = os.getenv("YANDEX_EMAIL_PASSWORD")
+
+DEFAULT_FROM_EMAIL = os.getenv("YANDEX_EMAIL")

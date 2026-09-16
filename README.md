@@ -21,3 +21,11 @@ First time: `docker compose up -d --build`
 Casually: `docker compose up -d`
 
 If changes to `Dockerfile` and/or `docker-compose.yml` were applied: `docker compose up -d --build`
+
+# .env configuration
+
+Rename `.env.example` file into `.env`
+
+Enter `yandex email address` that is gonna be used
+
+Create `yandex app password` and enter it 

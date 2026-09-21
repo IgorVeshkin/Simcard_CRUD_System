@@ -20,7 +20,7 @@ def main(request):
 
         # Добавление записи пользователя
         if request.POST.get("action") == "create":
-            current_tariff = TariffPlan.objects.filter(Title=request.POST.get("add-record-ServiceType"))
+            current_tariff = TariffPlan.objects.filter(pk=request.POST.get("add-record-ServiceType"))
 
             client_name = request.POST.get("add-record-CustomerName")
             client_phone = request.POST.get('add-record-Phone')
@@ -45,6 +45,7 @@ def main(request):
 
         # Обновление записи пользователя
         if request.POST.get("action") == "update":
+            
             current_tariff = TariffPlan.objects.filter(pk=request.POST.get("update-record-ServiceType-pk"))
 
             current_simcard_record = Simcard.objects.get(id=request.POST.get('update-record-simcard-pk'))
@@ -64,7 +65,7 @@ def main(request):
 
         # Удаление записи пользователя
         if request.POST.get("action") == "delete":
-            deleted_record_id = request.POST.get("deleted-record-id")
+            deleted_record_id = request.POST.get("deleted-record-pk")
 
             if not deleted_record_id:
                 return HttpResponseBadRequest(
